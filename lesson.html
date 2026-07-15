@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">Lesson — The Growth Ledger</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a class="brand" href="dashboard.html">
+      <svg class="brand-mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" stroke="#0F3D2E" stroke-width="3"/>
+        <circle cx="24" cy="24" r="15" stroke="#C89B3C" stroke-width="2"/>
+        <path d="M17 24L22 29L32 18" stroke="#0F3D2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-word">The Growth Ledger</span>
+    </a>
+    <a href="dashboard.html" class="btn btn-ghost">← Dashboard</a>
+  </div>
+</nav>
+
+<div id="loading-state" class="center" style="padding:100px 0;">
+  <div class="spinner" style="margin:0 auto 16px;"></div>
+  <p class="small">Loading your lesson…</p>
+</div>
+
+<div id="denied-state" class="hidden">
+  <section>
+    <div class="wrap-narrow center">
+      <div class="stamp stamp-locked" style="margin:0 auto 20px;"><span class="stamp-big">🔒</span><span>LOCKED</span></div>
+      <h2 id="denied-heading">This lesson isn't unlocked yet</h2>
+      <p id="denied-message" class="small"></p>
+      <a href="dashboard.html" class="btn btn-gold" style="margin-top:16px;">Back to your Growth Ledger</a>
+    </div>
+  </section>
+</div>
+
+<div id="lesson-content" class="hidden">
+
+  <header class="lesson-hero">
+    <div class="wrap">
+      <div class="eyebrow" id="lh-eyebrow"></div>
+      <h1 id="lh-title"></h1>
+      <p id="lh-hook" style="color:rgba(251,248,240,0.8); max-width:56ch;"></p>
+      <div class="progress-track" style="max-width:400px;"><div class="progress-fill" id="lh-progress"></div></div>
+    </div>
+  </header>
+
+  <div class="lesson-body">
+    <div class="wrap-narrow">
+
+      <div class="lesson-section">
+        <p id="l-intro" style="font-size:1.08rem;"></p>
+      </div>
+
+      <div id="l-sections"></div>
+
+      <div class="lesson-section">
+        <h3>Put it into practice</h3>
+        <div id="l-interactive"></div>
+      </div>
+
+      <div class="callout gold">
+        <strong>Today's action step</strong>
+        <p id="l-action" style="margin:8px 0 0;"></p>
+      </div>
+
+      <div class="lesson-section">
+        <h3>Downloadable workbook</h3>
+        <a id="l-pdf-link" class="resource-row" href="#" target="_blank" rel="noopener">
+          <div class="resource-icon">PDF</div>
+          <div>
+            <div class="resource-title" id="l-pdf-title"></div>
+            <div class="resource-sub">Download &amp; keep — fillable worksheet for this lesson</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="lesson-section">
+        <h3>Go deeper — curated videos</h3>
+        <div id="l-videos"></div>
+      </div>
+
+      <div class="center" style="margin:48px 0 20px;">
+        <button class="btn btn-gold" id="btn-complete">Mark Day Complete ✔</button>
+        <p class="small hidden" id="complete-msg" style="color:var(--ink-green); font-weight:600; margin-top:10px;">Nice work — Day marked complete. See you tomorrow.</p>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; padding:24px 0 60px; border-top:1px solid var(--line); margin-top:20px;">
+        <a href="dashboard.html" id="nav-prev" class="btn btn-outline">← Back to Ledger</a>
+        <a href="#" id="nav-next" class="btn btn-outline hidden">Next lesson →</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="js/lessons-data.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/lesson-loader.js"></script>
+</body>
+</html>

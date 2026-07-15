@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Growth Ledger — Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a class="brand" href="dashboard.html">
+      <svg class="brand-mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" stroke="#0F3D2E" stroke-width="3"/>
+        <circle cx="24" cy="24" r="15" stroke="#C89B3C" stroke-width="2"/>
+        <path d="M17 24L22 29L32 18" stroke="#0F3D2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-word">The Growth Ledger</span>
+    </a>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <span class="small mono" id="nav-email" style="color:rgba(33,29,24,0.6);"></span>
+      <button class="btn btn-ghost" id="btn-logout">Log out</button>
+    </div>
+  </div>
+</nav>
+
+<header style="background:var(--ink-green); color:var(--paper-white); padding:56px 0 40px;">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--cedi-gold-light)">Your Growth Ledger</div>
+    <h1 style="color:var(--paper-white); max-width:20ch;">Day <span id="hdr-today-num">—</span> of 30</h1>
+    <p style="color:rgba(251,248,240,0.75); max-width:50ch;" id="hdr-sub">Loading your progress…</p>
+    <div class="progress-track" style="max-width:520px;"><div class="progress-fill" id="progress-fill" style="width:0%;"></div></div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+
+    <div id="loading-state" class="center" style="padding:60px 0;">
+      <div class="spinner" style="margin:0 auto 16px;"></div>
+      <p class="small">Loading your Growth Ledger…</p>
+    </div>
+
+    <div id="dashboard-content" class="hidden">
+      <div class="day-grid" id="day-grid"></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="week-legend" style="padding-top:0;">
+  <div class="wrap">
+    <div class="grid grid-2" style="gap:16px;">
+      <div class="card small">
+        <strong>How unlocking works</strong>
+        <p style="margin-top:8px;">Each day's lesson unlocks on its calendar date (Ghana time), 1–30 August 2026, for everyone enrolled — regardless of when you paid. Today's lesson is highlighted in gold. Completed lessons turn green once you finish the interactive exercise.</p>
+      </div>
+      <div class="card small">
+        <strong>Missed a day?</strong>
+        <p style="margin-top:8px;">No problem — every unlocked day stays available for the rest of the course and beyond. Work through missed lessons whenever you have time; there's no penalty for going at your own pace once a day has unlocked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap center">
+    <p class="small">The Growth Ledger — a 30-Day Business & Revenue Mastery Course.</p>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="js/lessons-data.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+requireAuth().then(user => {
+  document.getElementById("nav-email").textContent = user.email;
+
+  db.collection("users").doc(user.uid).get().then(doc => {
+    const data = doc.exists ? doc.data() : { paid:false, completedDays:[] };
+
+    if (!data.paid) {
+      window.location.href = "index.html?next=" + encodeURIComponent("dashboard.html");
+      return;
+    }
+
+    renderDashboard(data.completedDays || []);
+  });
+});
+
+document.getElementById("btn-logout").addEventListener("click", function(){
+  logOut().then(() => window.location.href = "index.html");
+});
+
+function renderDashboard(completedDays){
+  const grid = document.getElementById("day-grid");
+  const today = new Date();
+  let todayDayNum = 0;
+
+  LESSONS.forEach(lesson => {
+    const unlocked = isDayUnlocked(lesson.day);
+    const isDone = completedDays.includes(lesson.day);
+    const lessonDate = new Date(lesson.date + "T00:00:00Z");
+    const isToday = unlocked && (todayInGhana(lessonDate));
+    if (isToday) todayDayNum = lesson.day;
+    if (unlocked && lesson.day > todayDayNum) todayDayNum = todayDayNum || lesson.day;
+
+    const card = document.createElement(unlocked ? "a" : "div");
+    if (unlocked) card.href = `lesson.html?day=${lesson.day}`;
+    card.className = "day-card" + (!unlocked ? " is-locked" : "") + (isToday ? " is-today" : "") + (isDone ? " is-done" : "");
+    card.innerHTML = `
+      <div class="dc-num">${unlocked ? "Day " + String(lesson.day).padStart(2,"0") : "🔒 " + String(lesson.day).padStart(2,"0")}</div>
+      <div class="dc-title">${lesson.title}</div>
+      <div class="dc-date">${formatDate(lesson.date)}${isDone ? " · ✔ Done" : ""}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Header stats
+  const highestUnlocked = LESSONS.filter(l => isDayUnlocked(l.day)).length;
+  document.getElementById("hdr-today-num").textContent = highestUnlocked;
+  document.getElementById("hdr-sub").textContent =
+    `${completedDays.length} of ${highestUnlocked} unlocked lesson${highestUnlocked===1?"":"s"} completed. Keep the streak going.`;
+  document.getElementById("progress-fill").style.width = (completedDays.length / 30 * 100) + "%";
+
+  document.getElementById("loading-state").classList.add("hidden");
+  document.getElementById("dashboard-content").classList.remove("hidden");
+}
+
+function todayInGhana(lessonDateUTC){
+  const now = new Date();
+  const nowDateStr = now.toISOString().slice(0,10);
+  const lessonDateStr = lessonDateUTC.toISOString().slice(0,10);
+  return nowDateStr === lessonDateStr;
+}
+
+function formatDate(iso){
+  const d = new Date(iso + "T00:00:00Z");
+  return d.toLocaleDateString("en-GB", { day:"numeric", month:"short", timeZone:"UTC" });
+}
+</script>
+</body>
+</html>
